@@ -4,22 +4,13 @@ using Modbus.Device;
 
 namespace PlcConnect.Program.Classes
 {
-    class PlcConnection(string ipAddress, int port, string command) : IDisposable
+    class PlcConnection(string ipAddress, int port) : IDisposable
     {
         private readonly string _ipAddress = ipAddress;
         private readonly int _port = port;
-        private readonly string _command = command;
         private bool _disposed;
 
-        private bool _isAscii = true;
-
-        public bool IsAscii
-        {
-            get => _isAscii;
-            set => _isAscii = value;
-        }
-
-        public async Task<string> SendCommandAsyncMc()
+        public async Task<string> SendCommandAsyncMc(string command, bool isAscii = true)
         {
             try
             {
@@ -30,14 +21,51 @@ namespace PlcConnect.Program.Classes
                 stream.ReadTimeout = 5000;  // 5 seconds timeout for reading
                 stream.WriteTimeout = 5000; // 5 seconds timeout for writing
 
-                byte[] command = _isAscii switch 
+                byte[] cmd = isAscii switch
                 {
-                    false => HexStringToBytes(_command),
-                    _ => Encoding.ASCII.GetBytes(_command)
+                    false => HexStringToBytes(command),   // If isAscii is false, convert the command from hex string to byte array.
+                    _ => Encoding.ASCII.GetBytes(AscciiToHexstring(command)) // If isAscii is true, convert to hex string and then to bytes using ASCII encoding.
                 };
 
                 // Send the command to the PLC
-                await stream.WriteAsync(command);
+                await stream.WriteAsync(cmd);
+
+                // Read the response
+                var response = new byte[256];
+                int bytesRead = await stream.ReadAsync(response);
+
+                // Return the response as a hex string
+                return BitConverter.ToString(response, 0, bytesRead).Replace("-", "");
+            }
+            catch (Exception ex)
+            {
+                // Log exceptions (e.g., connection issues, timeouts)
+                // Assuming a logger is available
+                // Logger.LogError(ex, "Error sending command to PLC");
+                return $"Error: {ex.Message}";
+            }
+        }
+
+        public async Task<string> WriteRelayMc(string head, bool value)
+        {
+            try
+            {
+                using TcpClient client = new(_ipAddress, _port);
+                using NetworkStream stream = client.GetStream();
+
+                // Set timeout values for read and write
+                stream.ReadTimeout = 5000;  // 5 seconds timeout for reading
+                stream.WriteTimeout = 5000; // 5 seconds timeout for writing
+
+                var preCommand = "500000FF03FF00001800041402000101";
+                var postCommand = $"{head[0]}*00{head.Substring(1)}0{(value ? "1" : "0")}";
+                var command = preCommand + postCommand;
+                var hexCommand = AscciiToHexstring(command);
+                var bytesCommand = HexStringToBytes(hexCommand);
+
+                Console.WriteLine($"Command: {hexCommand}");
+
+                await stream.WriteAsync(bytesCommand);
 
                 // Read the response
                 var response = new byte[256];
@@ -61,7 +89,7 @@ namespace PlcConnect.Program.Classes
             {
                 using TcpClient client = new(_ipAddress, _port);
                 ModbusIpMaster master = ModbusIpMaster.CreateIp(client);
-                ushort[] registers = master.ReadHoldingRegisters(startAddress, count); 
+                ushort[] registers = master.ReadHoldingRegisters(startAddress, count);
 
                 return "Registers: " + string.Join(", ", registers);
             }
@@ -108,9 +136,16 @@ namespace PlcConnect.Program.Classes
             }
         }
 
+        private static string AscciiToHexstring(string asciis)
+        {
+            return string.Concat(asciis.Select(c => ((int)c).ToString("X2"))).ToUpper();
+        }
+
         private static byte[] HexStringToBytes(string hex)
         {
-            return [.. Enumerable.Range(0, hex.Length / 2).Select(i => Convert.ToByte(hex.Substring(i * 2, 2), 16))];
+            return Enumerable.Range(0, hex.Length / 2)
+                             .Select(i => Convert.ToByte(hex.Substring(i * 2, 2), 16))
+                             .ToArray();
         }
 
         protected virtual void Dispose(bool disposing)

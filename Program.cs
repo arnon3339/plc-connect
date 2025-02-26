@@ -23,23 +23,43 @@ var commandOption = new Option<string>(
     "Command for sending to PLC"
 );
 
+var headOption = new Option<string>(
+    "--head",
+    "head of PLC memory"
+);
+
+var valueOption = new Option<int>(
+    "--value",
+    "value sent to PLC"
+);
+
+var binaryOption = new Option<bool>(
+    "--binary",
+    "binary mode PLC"
+);
+
 rootCommand.AddOption(ipAddressOption);
 rootCommand.AddOption(portOption);
 rootCommand.AddOption(commandOption);
+rootCommand.AddOption(headOption);
+rootCommand.AddOption(valueOption);
 
-rootCommand.SetHandler(async (address, port, command) =>
+rootCommand.SetHandler(static async (address, port, command, head, value, binary) =>
 {
+    using PlcConnection plcConnection = new(address, port);
     if (address != null && port != 0 && command != null)
     {
-        using PlcConnection plcConnection = new PlcConnection(address, port, command);
-        Console.WriteLine(await plcConnection.SendCommandAsyncMc());
+        Console.WriteLine(await plcConnection.SendCommandAsyncMc(command, !binary));
+    }
+    else if (address != null && port != 0 && command == null && head != null)
+    {
+        Console.WriteLine(await plcConnection.WriteRelayMc(head, value != 0));
     }
     else
     {
-        Console.WriteLine($"Address: {address}, Port: {port}, Command: {command}");
-        throw new Exception(message: "Missing <address> or <port> or <command>");
+        throw new Exception(message: "Missing command line arguments.");
     }
 
-}, ipAddressOption, portOption, commandOption);
+}, ipAddressOption, portOption, commandOption, headOption, valueOption, binaryOption);
 
 return await rootCommand.InvokeAsync(args);
