@@ -32,7 +32,7 @@ rootCommand.SetHandler(async (address, port, command) =>
     if (address != null && port != 0 && command != null)
     {
         using PlcConnection plcConnection = new PlcConnection(address, port, command);
-        Console.WriteLine(await plcConnection.SendCommandAsync());
+        Console.WriteLine(await plcConnection.SendCommandAsyncMc());
     }
     else
     {

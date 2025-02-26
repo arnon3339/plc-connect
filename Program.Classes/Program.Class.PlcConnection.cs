@@ -1,4 +1,6 @@
 ﻿using System.Net.Sockets;
+using System.Text;
+using Modbus.Device;
 
 namespace PlcConnect.Program.Classes
 {
@@ -9,12 +11,15 @@ namespace PlcConnect.Program.Classes
         private readonly string _command = command;
         private bool _disposed;
 
-        private static byte[] HexStringToBytes(string hex)
+        private bool _isAscii = true;
+
+        public bool IsAscii
         {
-            return [.. Enumerable.Range(0, hex.Length / 2).Select(i => Convert.ToByte(hex.Substring(i * 2, 2), 16))];
+            get => _isAscii;
+            set => _isAscii = value;
         }
 
-        public async Task<string> SendCommandAsync()
+        public async Task<string> SendCommandAsyncMc()
         {
             try
             {
@@ -25,7 +30,11 @@ namespace PlcConnect.Program.Classes
                 stream.ReadTimeout = 5000;  // 5 seconds timeout for reading
                 stream.WriteTimeout = 5000; // 5 seconds timeout for writing
 
-                byte[] command = HexStringToBytes(_command);
+                byte[] command = _isAscii switch 
+                {
+                    false => HexStringToBytes(_command),
+                    _ => Encoding.ASCII.GetBytes(_command)
+                };
 
                 // Send the command to the PLC
                 await stream.WriteAsync(command);
@@ -44,6 +53,64 @@ namespace PlcConnect.Program.Classes
                 // Logger.LogError(ex, "Error sending command to PLC");
                 return $"Error: {ex.Message}";
             }
+        }
+
+        public string ReadRegistersModbus(ushort startAddress, ushort count)
+        {
+            try
+            {
+                using TcpClient client = new(_ipAddress, _port);
+                ModbusIpMaster master = ModbusIpMaster.CreateIp(client);
+                ushort[] registers = master.ReadHoldingRegisters(startAddress, count); 
+
+                return "Registers: " + string.Join(", ", registers);
+            }
+            catch (Exception ex)
+            {
+                return $"Error: {ex.Message}";
+            }
+        }
+
+        public string WriteRegistersModbus(ushort startAddress, ushort[] values)
+        {
+            try
+            {
+                byte slaveId = 1;
+                using TcpClient client = new(_ipAddress, _port);
+                ModbusIpMaster master = ModbusIpMaster.CreateIp(client);
+
+                master.WriteMultipleRegisters(slaveId, startAddress, values);
+
+                return $"Wrote multiple values to registers starting at {startAddress}.";
+
+            }
+            catch (Exception ex)
+            {
+                return $"Error: {ex.Message}";
+            }
+        }
+
+        public string WriteRegisterModbus(ushort startAddress, ushort value)
+        {
+            try
+            {
+                byte slaveId = 1;
+                using TcpClient client = new(_ipAddress, _port);
+                ModbusIpMaster master = ModbusIpMaster.CreateIp(client);
+                master.WriteSingleRegister(slaveId, startAddress, value);
+
+                return $"Wrote value {value} to register at {startAddress}.";
+
+            }
+            catch (Exception ex)
+            {
+                return $"Error: {ex.Message}";
+            }
+        }
+
+        private static byte[] HexStringToBytes(string hex)
+        {
+            return [.. Enumerable.Range(0, hex.Length / 2).Select(i => Convert.ToByte(hex.Substring(i * 2, 2), 16))];
         }
 
         protected virtual void Dispose(bool disposing)
