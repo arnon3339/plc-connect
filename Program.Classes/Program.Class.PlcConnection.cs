@@ -2,25 +2,16 @@
 
 namespace PlcConnect.Program.Classes
 {
-    class PlcConnection : IDisposable
+    class PlcConnection(string ipAddress, int port, string command) : IDisposable
     {
-        private readonly string _ipAddress;
-        private readonly int _port;
-        private readonly string _command;
+        private readonly string _ipAddress = ipAddress;
+        private readonly int _port = port;
+        private readonly string _command = command;
         private bool _disposed;
 
-        public PlcConnection(string ipAddress, int port, string command)
+        private static byte[] HexStringToBytes(string hex)
         {
-            _ipAddress = ipAddress;
-            _port = port;
-            _command = command;
-        }
-
-        private byte[] HexStringToBytes(string hex)
-        {
-            return Enumerable.Range(0, hex.Length / 2)
-                             .Select(i => Convert.ToByte(hex.Substring(i * 2, 2), 16))
-                             .ToArray();
+            return [.. Enumerable.Range(0, hex.Length / 2).Select(i => Convert.ToByte(hex.Substring(i * 2, 2), 16))];
         }
 
         public async Task<string> SendCommandAsync()
@@ -37,11 +28,11 @@ namespace PlcConnect.Program.Classes
                 byte[] command = HexStringToBytes(_command);
 
                 // Send the command to the PLC
-                await stream.WriteAsync(command, 0, command.Length);
+                await stream.WriteAsync(command);
 
                 // Read the response
                 var response = new byte[256];
-                int bytesRead = await stream.ReadAsync(response, 0, response.Length);
+                int bytesRead = await stream.ReadAsync(response);
 
                 // Return the response as a hex string
                 return BitConverter.ToString(response, 0, bytesRead).Replace("-", "");
