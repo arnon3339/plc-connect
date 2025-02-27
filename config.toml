@@ -1,0 +1,15 @@
+[default]
+subheader = "5000"
+network_no = "00"
+pc_station_no = "FF"
+io_unit_address = "03FF"
+request_length = "00001800"
+cpu_monitoring_timer = "0414"
+
+[default.read]
+command = ""
+subcommand = ""
+
+[default.write]
+command = "0200"
+subcommand = "0101"

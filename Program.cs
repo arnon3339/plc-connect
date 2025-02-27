@@ -1,4 +1,5 @@
 ﻿using System.CommandLine;
+using System.Net.Sockets;
 using PlcConnect.Program.Classes;
 
 if (args is null)
@@ -13,7 +14,7 @@ var ipAddressOption = new Option<string>(
     "IP address of PLC"
 );
 
-var portOption = new Option<int>(
+var portOption = new Option<string>(
     "--port",
     "Port of PLC"
 );
@@ -28,7 +29,7 @@ var headOption = new Option<string>(
     "head of PLC memory"
 );
 
-var valueOption = new Option<int>(
+var valueOption = new Option<string>(
     "--value",
     "value sent to PLC"
 );
@@ -46,14 +47,31 @@ rootCommand.AddOption(valueOption);
 
 rootCommand.SetHandler(static async (address, port, command, head, value, binary) =>
 {
-    using PlcConnection plcConnection = new(address, port);
-    if (address != null && port != 0 && command != null)
+    if (address == null || port == null)
+    {
+        throw new Exception(message: "Missing IP address or port.");
+    }
+
+    using PlcConnection plcConnection = new(address, int.Parse(port));
+    if (command != null)
     {
         Console.WriteLine(await plcConnection.SendCommandAsyncMc(command, !binary));
     }
-    else if (address != null && port != 0 && command == null && head != null)
+    else if (command == null && head != null && value != null)
     {
-        Console.WriteLine(await plcConnection.WriteRelayMc(head, value != 0));
+        try
+        {
+            var intValue = int.Parse(value);
+            if (intValue < 0 || intValue > 1)
+            {
+                throw new Exception(message: "Value must be 0 or 1.");
+            }
+            Console.WriteLine(await plcConnection.WriteRelayMc(head, intValue != 0));
+        }
+        catch (Exception ex)
+        {
+            throw new Exception(message: ex.Message);
+        }
     }
     else
     {

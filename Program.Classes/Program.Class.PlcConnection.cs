@@ -1,6 +1,7 @@
 ﻿using System.Net.Sockets;
 using System.Text;
 using Modbus.Device;
+using Tomlyn.Model;
 
 namespace PlcConnect.Program.Classes
 {
@@ -57,15 +58,31 @@ namespace PlcConnect.Program.Classes
                 stream.ReadTimeout = 5000;  // 5 seconds timeout for reading
                 stream.WriteTimeout = 5000; // 5 seconds timeout for writing
 
-                var preCommand = "500000FF03FF00001800041402000101";
+                // var preCommand = "500000FF03FF00001800041402000101";
                 var postCommand = $"{head[0]}*00{head.Substring(1)}0{(value ? "1" : "0")}";
-                var command = preCommand + postCommand;
-                var hexCommand = AscciiToHexstring(command);
-                var bytesCommand = HexStringToBytes(hexCommand);
+                // var command = preCommand + postCommand;
+                // var hexCommand = AscciiToHexstring(command);
+                // var bytesCommand = HexStringToBytes(hexCommand);
 
-                Console.WriteLine($"Command: {hexCommand}");
+                var headCmd = (string)((TomlTable)Config.config["default"]!)["subheader"];
+                var networkCmd = (string)((TomlTable)Config.config["default"]!)["network_no"];
+                var pcStationNoCmd = (string)((TomlTable)Config.config["default"]!)["pc_station_no"];
+                var ioUnitAddressCmd = (string)((TomlTable)Config.config["default"]!)["io_unit_address"];
+                var requestLengthCmd = (string)((TomlTable)Config.config["default"]!)["request_length"];
+                var cpuMonitoringTimerCmd = (string)((TomlTable)Config.config["default"]!)["cpu_monitoring_timer"];
+                var commandCmd = (string)((TomlTable)((TomlTable)Config.config["default"]!)["write"]!)["command"];
+                var subcommandCmd = (string)((TomlTable)((TomlTable)Config.config["default"]!)["write"]!)["subcommand"];
 
-                await stream.WriteAsync(bytesCommand);
+                var cmdToml = $"{headCmd}{networkCmd}{pcStationNoCmd}{ioUnitAddressCmd}{requestLengthCmd}" + 
+                    $"{cpuMonitoringTimerCmd}{commandCmd}{subcommandCmd}{postCommand}";
+                var hexTomlCmd = AscciiToHexstring(cmdToml);
+                var bytesTomlCmd = HexStringToBytes(hexTomlCmd);
+
+                // Console.WriteLine($"Command: {hexCommand}");
+                // Console.WriteLine($"Command from TOML: {hexTomlCmd}");
+
+                // await stream.WriteAsync(bytesCommand);
+                await stream.WriteAsync(bytesTomlCmd);
 
                 // Read the response
                 var response = new byte[256];
@@ -73,6 +90,7 @@ namespace PlcConnect.Program.Classes
 
                 // Return the response as a hex string
                 return BitConverter.ToString(response, 0, bytesRead).Replace("-", "");
+                // return "Command sent";
             }
             catch (Exception ex)
             {
