@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.13.35818.85 d17.13
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WriteDPlcUIPackage", "WriteDPlc\WriteDPlcUIPackage\WriteDPlcUIPackage.csproj", "{047C59C6-7E4E-43BE-B37B-E4729A5197A7}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WriteDPlcPackage", "WriteDPlc\WriteDPlcPackage\WriteDPlcPackage.csproj", "{030DA855-7ECA-4A62-9AB3-90A50F5951AB}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{047C59C6-7E4E-43BE-B37B-E4729A5197A7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{047C59C6-7E4E-43BE-B37B-E4729A5197A7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{047C59C6-7E4E-43BE-B37B-E4729A5197A7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{047C59C6-7E4E-43BE-B37B-E4729A5197A7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{030DA855-7ECA-4A62-9AB3-90A50F5951AB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{030DA855-7ECA-4A62-9AB3-90A50F5951AB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{030DA855-7ECA-4A62-9AB3-90A50F5951AB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{030DA855-7ECA-4A62-9AB3-90A50F5951AB}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {A6876BD9-D8C0-41DC-8AEE-81879666E198}
+	EndGlobalSection
+EndGlobal

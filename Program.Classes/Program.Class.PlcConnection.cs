@@ -154,6 +154,24 @@ namespace PlcConnect.Program.Classes
             }
         }
 
+        public string WriteCoilModbus(ushort startAddress, bool value)
+        {
+            try
+            {
+                byte slaveId = 1;
+                using TcpClient client = new(_ipAddress, _port);
+                ModbusIpMaster master = ModbusIpMaster.CreateIp(client);
+                master.WriteSingleCoil(slaveId, startAddress, value);
+
+                return $"Wrote value {value} to coil at {startAddress}.";
+
+            }
+            catch (Exception ex)
+            {
+                return $"Error: {ex.Message}";
+            }
+        }
+
         private static string AscciiToHexstring(string asciis)
         {
             return string.Concat(asciis.Select(c => ((int)c).ToString("X2"))).ToUpper();

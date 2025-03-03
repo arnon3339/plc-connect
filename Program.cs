@@ -66,7 +66,8 @@ rootCommand.SetHandler(static async (address, port, command, head, value, binary
             {
                 throw new Exception(message: "Value must be 0 or 1.");
             }
-            Console.WriteLine(await plcConnection.WriteRelayMc(head, intValue != 0));
+            // Console.WriteLine(await plcConnection.WriteRelayMc(head, intValue != 0));
+            Console.WriteLine(plcConnection.WriteCoilModbus(ushort.Parse(head), intValue != 0));
         }
         catch (Exception ex)
         {

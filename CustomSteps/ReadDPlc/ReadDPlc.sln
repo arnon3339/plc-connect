@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.13.35818.85 d17.13
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ReadDPlcUIPackage", "ReadDPlc\ReadDPlcUIPackage\ReadDPlcUIPackage.csproj", "{B20B1F1F-F445-4424-A5CE-C9314B0D5180}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ReadDPlcPackage", "ReadDPlc\ReadDPlcPackage\ReadDPlcPackage.csproj", "{5598F1EF-91CA-4DC6-886F-B47102A60E38}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{B20B1F1F-F445-4424-A5CE-C9314B0D5180}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B20B1F1F-F445-4424-A5CE-C9314B0D5180}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B20B1F1F-F445-4424-A5CE-C9314B0D5180}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B20B1F1F-F445-4424-A5CE-C9314B0D5180}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5598F1EF-91CA-4DC6-886F-B47102A60E38}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5598F1EF-91CA-4DC6-886F-B47102A60E38}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5598F1EF-91CA-4DC6-886F-B47102A60E38}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5598F1EF-91CA-4DC6-886F-B47102A60E38}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {F0E1963E-5A53-43CD-9CC0-F25556621F48}
+	EndGlobalSection
+EndGlobal

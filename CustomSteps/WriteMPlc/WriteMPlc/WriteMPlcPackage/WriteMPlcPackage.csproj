@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk">
+	<PropertyGroup>
+		<Version>1.0.0.0</Version>
+		<Description>This is a WriteMPlc step.</Description>
+		<TargetFramework>net60</TargetFramework>
+		<RootNamespace>WriteMPlcPackage</RootNamespace>
+		<AssemblyName>WriteMPlcPackage</AssemblyName>
+		<OutputPath>..\assets\</OutputPath>
+		<CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+		<ProduceReferenceAssembly>false</ProduceReferenceAssembly>
+		<AppendTargetFrameworkToOutputPath>False</AppendTargetFrameworkToOutputPath>
+	</PropertyGroup>
+	<ItemGroup>
+		<PackageReference Include="Matrox.DesignAssistant.Core" Version="10.0.0" ExcludeAssets="runtime"/>
+		<PackageReference Include="Matrox.MatroxImagingLibrary" Version="10.0.0"  ExcludeAssets="runtime"/>
+	</ItemGroup>
+	<ItemGroup>     
+    <None Include="WriteMPlc.das"/>
+	</ItemGroup>
+	<Target Name="PostBuild" BeforeTargets="PostBuildEvent">
+		<Copy SourceFiles="WriteMPlc.das" DestinationFolder="$(OutDir)\.." />
+	</Target>
+</Project>
