@@ -29,7 +29,7 @@ namespace ReadMPlcPackage
 
 
         [Output]     
-        public string Value
+        public int Value
         {
             get
             {
@@ -37,7 +37,7 @@ namespace ReadMPlcPackage
                 return _valueOutput;
             }
         }
-        private string _valueOutput;
+        private int _valueOutput;
 
         protected override void Run()
         {
@@ -64,7 +64,12 @@ namespace ReadMPlcPackage
             int bytesRead = stream.Read(response);
 
             var outStr = BitConverter.ToString(response, 0, bytesRead).Replace("-", "");
-            _valueOutput = outStr;
+
+            if (outStr[..2] != "D0")
+            {
+                throw new Exception("Invalid response");
+            }
+            _valueOutput = outStr[0] != '0' ? 1 : 0;
 
         }
     }
