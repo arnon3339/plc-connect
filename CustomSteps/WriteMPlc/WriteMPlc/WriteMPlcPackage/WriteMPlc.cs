@@ -10,6 +10,7 @@ using Matrox.MatroxImagingLibrary;
 using System.Net.Sockets;
 using System.Net;
 using System.Linq;
+using System.Text;
 
 namespace WriteMPlcPackage
 {
@@ -37,7 +38,7 @@ namespace WriteMPlcPackage
         public int InValue => (int)GetInputValue("InValue");
 
         [Output]
-        public string Value
+        public int Value
         {
             get
             {
@@ -46,7 +47,7 @@ namespace WriteMPlcPackage
             }
         }
 
-        private string _valueOutput;
+        private int _valueOutput;
 
         protected override void Run()
         {
@@ -71,9 +72,15 @@ namespace WriteMPlcPackage
             stream.Write(commandBytes);
             var response = new byte[256];
             int bytesRead = stream.Read(response);
+            
+            var resAscii = Encoding.ASCII.GetString(response, 0, bytesRead);
 
-            var outStr = BitConverter.ToString(response, 0, bytesRead).Replace("-", "");
-            _valueOutput = outStr;
+            if (resAscii[..2] != "D0")
+            {
+                throw new Exception("Invalid response");
+            }
+            
+            _valueOutput = Convert.ToInt32(resAscii[^2..], 16);
         }
 
     }

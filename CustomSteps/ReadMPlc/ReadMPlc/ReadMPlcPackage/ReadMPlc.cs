@@ -5,6 +5,7 @@ using System.Net.Sockets;
 using System.Net;
 using System.Linq;
 using System;
+using System.Text;
 
 namespace ReadMPlcPackage
 {
@@ -63,14 +64,14 @@ namespace ReadMPlcPackage
             var response = new byte[256];
             int bytesRead = stream.Read(response);
 
-            var outStr = BitConverter.ToString(response, 0, bytesRead).Replace("-", "");
+            var resAscii = Encoding.ASCII.GetString(response, 0, bytesRead);
 
-            if (outStr[..2] != "D0")
+            if (resAscii[..2] != "D0")
             {
                 throw new Exception("Invalid response");
             }
-            _valueOutput = outStr[0] != '0' ? 1 : 0;
-
+            
+            _valueOutput = Convert.ToInt32(resAscii[^2..], 16);
         }
     }
 }

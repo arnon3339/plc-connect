@@ -10,6 +10,7 @@ using Matrox.MatroxImagingLibrary;
 using System.Linq;
 using System.Net.Sockets;
 using System.Net;
+using System.Text;
 
 namespace ReadDPlcPackage
 {
@@ -69,12 +70,14 @@ namespace ReadDPlcPackage
             var response = new byte[256];
             int bytesRead = stream.Read(response);
 
-            var outStr = BitConverter.ToString(response, 0, bytesRead).Replace("-", "");
-            if (outStr[..2] != "D0")
+            var resAscii = Encoding.ASCII.GetString(response, 0, bytesRead);
+
+            if (resAscii[..2] != "D0")
             {
                 throw new Exception("Invalid response");
             }
-            _valueOutput = Convert.ToInt32(outStr[^2..], 16);
+            
+            _valueOutput = Convert.ToInt32(resAscii[^2..], 16);
         }
     }
 }
