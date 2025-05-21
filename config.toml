@@ -1,15 +1,28 @@
 [default]
 subheader = "5000"
 network_no = "00"
-pc_station_no = "FF"
-io_unit_address = "03FF"
-request_length = "00001800"
-cpu_monitoring_timer = "0414"
+pc_no = "FF"
+io_no = "03FF"
+station_no = "00"
+monitoring_timer = "0010"
+number_of_points = "0001"
 
 [default.read]
-command = ""
-subcommand = ""
+request_length = "0018"
+command = "0401"
+
+[default.read.M]
+subcommand = "0001"
+
+[default.read.D]
+subcommand = "0000"
 
 [default.write]
-command = "0200"
-subcommand = "0101"
+request_length = "001C"
+command = "1401"
+
+[default.write.M]
+subcommand = "0001"
+
+[default.write.D]
+subcommand = "0000"

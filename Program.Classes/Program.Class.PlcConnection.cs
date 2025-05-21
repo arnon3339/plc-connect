@@ -40,14 +40,11 @@ namespace PlcConnect.Program.Classes
             }
             catch (Exception ex)
             {
-                // Log exceptions (e.g., connection issues, timeouts)
-                // Assuming a logger is available
-                // Logger.LogError(ex, "Error sending command to PLC");
                 return $"Error: {ex.Message}";
             }
         }
 
-        public async Task<string> WriteRelayMc(string head, bool value)
+        public async Task<string> readWriteMc(string head, string? value)
         {
             try
             {
@@ -58,30 +55,35 @@ namespace PlcConnect.Program.Classes
                 stream.ReadTimeout = 5000;  // 5 seconds timeout for reading
                 stream.WriteTimeout = 5000; // 5 seconds timeout for writing
 
-                // var preCommand = "500000FF03FF00001800041402000101";
-                var postCommand = $"{head[0]}*00{head.Substring(1)}0{(value ? "1" : "0")}";
-                // var command = preCommand + postCommand;
-                // var hexCommand = AscciiToHexstring(command);
-                // var bytesCommand = HexStringToBytes(hexCommand);
+                var deviceAddr = head[1..];
+                var action = value != null? "write": "read";
 
                 var headCmd = (string)((TomlTable)Config.config["default"]!)["subheader"];
                 var networkCmd = (string)((TomlTable)Config.config["default"]!)["network_no"];
-                var pcStationNoCmd = (string)((TomlTable)Config.config["default"]!)["pc_station_no"];
-                var ioUnitAddressCmd = (string)((TomlTable)Config.config["default"]!)["io_unit_address"];
-                var requestLengthCmd = (string)((TomlTable)Config.config["default"]!)["request_length"];
-                var cpuMonitoringTimerCmd = (string)((TomlTable)Config.config["default"]!)["cpu_monitoring_timer"];
-                var commandCmd = (string)((TomlTable)((TomlTable)Config.config["default"]!)["write"]!)["command"];
-                var subcommandCmd = (string)((TomlTable)((TomlTable)Config.config["default"]!)["write"]!)["subcommand"];
+                var pcNoCmd = (string)((TomlTable)Config.config["default"]!)["pc_no"];
+                var ioNoCmd = (string)((TomlTable)Config.config["default"]!)["io_no"];
+                var stationNoCmd = (string)((TomlTable)Config.config["default"]!)["station_no"];
+                var requestLengthCmd =
+                        (string)((TomlTable)((TomlTable)Config.config["default"])[action])["request_length"];
+                var MonitoringTimerCmd = (string)((TomlTable)Config.config["default"]!)["monitoring_timer"];
+                var commandCmd = (string)((TomlTable)((TomlTable)Config.config["default"])[action])["command"];
+                var headDeviceCmd = head[0..1];
+                var subcommandCmd =
+                    (string)((TomlTable)((TomlTable)((TomlTable)Config.config["default"])["write"])[headDeviceCmd])["subcommand"];
+                var deviceCodeCmd = ushort.Parse(deviceAddr).ToString("X4");
+                var numOfPointsCmd = (string)((TomlTable)Config.config["default"]!)["number_of_points"];
 
-                var cmdToml = $"{headCmd}{networkCmd}{pcStationNoCmd}{ioUnitAddressCmd}{requestLengthCmd}" + 
-                    $"{cpuMonitoringTimerCmd}{commandCmd}{subcommandCmd}{postCommand}";
+                var cmdToml = $"{headCmd}{networkCmd}{pcNoCmd}{ioNoCmd}{stationNoCmd}" +
+                    $"{requestLengthCmd}{MonitoringTimerCmd}{commandCmd}{subcommandCmd}" +
+                    $"{deviceCodeCmd}{headCmd}{numOfPointsCmd}";
+                
+                if (value != null)
+                    cmdToml += headDeviceCmd == "M"? value != "0"? 1: 0: ushort.Parse(value).ToString("X4");
+
                 var hexTomlCmd = AscciiToHexstring(cmdToml);
                 var bytesTomlCmd = HexStringToBytes(hexTomlCmd);
 
-                // Console.WriteLine($"Command: {hexCommand}");
-                // Console.WriteLine($"Command from TOML: {hexTomlCmd}");
-
-                // await stream.WriteAsync(bytesCommand);
+              
                 await stream.WriteAsync(bytesTomlCmd);
 
                 // Read the response
@@ -91,80 +93,6 @@ namespace PlcConnect.Program.Classes
                 // Return the response as a hex string
                 return BitConverter.ToString(response, 0, bytesRead).Replace("-", "");
                 // return "Command sent";
-            }
-            catch (Exception ex)
-            {
-                // Log exceptions (e.g., connection issues, timeouts)
-                // Assuming a logger is available
-                // Logger.LogError(ex, "Error sending command to PLC");
-                return $"Error: {ex.Message}";
-            }
-        }
-
-        public string ReadRegistersModbus(ushort startAddress, ushort count)
-        {
-            try
-            {
-                using TcpClient client = new(_ipAddress, _port);
-                ModbusIpMaster master = ModbusIpMaster.CreateIp(client);
-                ushort[] registers = master.ReadHoldingRegisters(startAddress, count);
-
-                return "Registers: " + string.Join(", ", registers);
-            }
-            catch (Exception ex)
-            {
-                return $"Error: {ex.Message}";
-            }
-        }
-
-        public string WriteRegistersModbus(ushort startAddress, ushort[] values)
-        {
-            try
-            {
-                byte slaveId = 1;
-                using TcpClient client = new(_ipAddress, _port);
-                ModbusIpMaster master = ModbusIpMaster.CreateIp(client);
-
-                master.WriteMultipleRegisters(slaveId, startAddress, values);
-
-                return $"Wrote multiple values to registers starting at {startAddress}.";
-
-            }
-            catch (Exception ex)
-            {
-                return $"Error: {ex.Message}";
-            }
-        }
-
-        public string WriteRegisterModbus(ushort startAddress, ushort value)
-        {
-            try
-            {
-                byte slaveId = 1;
-                using TcpClient client = new(_ipAddress, _port);
-                ModbusIpMaster master = ModbusIpMaster.CreateIp(client);
-                master.WriteSingleRegister(slaveId, startAddress, value);
-
-                return $"Wrote value {value} to register at {startAddress}.";
-
-            }
-            catch (Exception ex)
-            {
-                return $"Error: {ex.Message}";
-            }
-        }
-
-        public string WriteCoilModbus(ushort startAddress, bool value)
-        {
-            try
-            {
-                byte slaveId = 1;
-                using TcpClient client = new(_ipAddress, _port);
-                ModbusIpMaster master = ModbusIpMaster.CreateIp(client);
-                master.WriteSingleCoil(slaveId, startAddress, value);
-
-                return $"Wrote value {value} to coil at {startAddress}.";
-
             }
             catch (Exception ex)
             {
