@@ -1,6 +1,5 @@
 ﻿using System.Net.Sockets;
 using System.Text;
-using Modbus.Device;
 using Tomlyn.Model;
 
 namespace PlcConnect.Program.Classes
@@ -22,12 +21,15 @@ namespace PlcConnect.Program.Classes
                 stream.ReadTimeout = 5000;  // 5 seconds timeout for reading
                 stream.WriteTimeout = 5000; // 5 seconds timeout for writing
 
+                // Console.WriteLine(command);
+
                 byte[] cmd = isAscii switch
                 {
                     false => HexStringToBytes(command),   // If isAscii is false, convert the command from hex string to byte array.
-                    _ => Encoding.ASCII.GetBytes(AscciiToHexstring(command)) // If isAscii is true, convert to hex string and then to bytes using ASCII encoding.
+                    _ => HexStringToBytes(AscciiToHexstring(command)) // If isAscii is true, convert to hex string and then to bytes using ASCII encoding.
                 };
 
+                // Console.WriteLine(BitConverter.ToString(cmd).Replace("-", " "));
                 // Send the command to the PLC
                 await stream.WriteAsync(cmd);
 
@@ -37,6 +39,7 @@ namespace PlcConnect.Program.Classes
 
                 // Return the response as a hex string
                 return BitConverter.ToString(response, 0, bytesRead).Replace("-", "");
+                // return "Command sent";
             }
             catch (Exception ex)
             {
@@ -54,7 +57,6 @@ namespace PlcConnect.Program.Classes
                 // Set timeout values for read and write
                 stream.ReadTimeout = 5000;  // 5 seconds timeout for reading
                 stream.WriteTimeout = 5000; // 5 seconds timeout for writing
-
                 var deviceAddr = head[1..];
                 var action = value != null? "write": "read";
 
@@ -70,19 +72,23 @@ namespace PlcConnect.Program.Classes
                 var headDeviceCmd = head[0..1];
                 var subcommandCmd =
                     (string)((TomlTable)((TomlTable)((TomlTable)Config.config["default"])["write"])[headDeviceCmd])["subcommand"];
-                var deviceCodeCmd = ushort.Parse(deviceAddr).ToString("X4");
+                var deviceCodeCmd = headDeviceCmd == "M"? ushort.Parse(deviceAddr).ToString("X4"):
+                    ushort.Parse(deviceAddr).ToString("X2");
                 var numOfPointsCmd = (string)((TomlTable)Config.config["default"]!)["number_of_points"];
 
                 var cmdToml = $"{headCmd}{networkCmd}{pcNoCmd}{ioNoCmd}{stationNoCmd}" +
                     $"{requestLengthCmd}{MonitoringTimerCmd}{commandCmd}{subcommandCmd}" +
-                    $"{deviceCodeCmd}{headCmd}{numOfPointsCmd}";
+                    $"{deviceCodeCmd}{headDeviceCmd}{numOfPointsCmd}";
                 
                 if (value != null)
                     cmdToml += headDeviceCmd == "M"? value != "0"? 1: 0: ushort.Parse(value).ToString("X4");
 
+                // Console.WriteLine(cmdToml);
+
                 var hexTomlCmd = AscciiToHexstring(cmdToml);
                 var bytesTomlCmd = HexStringToBytes(hexTomlCmd);
 
+                // Console.WriteLine(BitConverter.ToString(bytesTomlCmd).Replace("-", " "));
               
                 await stream.WriteAsync(bytesTomlCmd);
 

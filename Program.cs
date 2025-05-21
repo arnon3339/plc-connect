@@ -61,7 +61,7 @@ rootCommand.SetHandler(static async (address, port, command, head, value, binary
     {
         try
         {
-            Console.WriteLine(plcConnection.readWriteMc(head, value));
+            Console.WriteLine(await plcConnection.readWriteMc(head, value));
         }
         catch (Exception ex)
         {
@@ -70,7 +70,7 @@ rootCommand.SetHandler(static async (address, port, command, head, value, binary
     }
     else
     {
-        throw new Exception(message: "Missing command line arguments.");
+        throw new Exception(message: "Missing or head command line arguments.");
     }
 
 }, ipAddressOption, portOption, commandOption, headOption, valueOption, binaryOption);

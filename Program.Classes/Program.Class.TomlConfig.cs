@@ -7,7 +7,9 @@ class Config
 
     static Config()
     {
-        var filePath = "config.toml";
+        string exePath = System.Reflection.Assembly.GetExecutingAssembly().Location;
+        string exeDirectory = Path.GetDirectoryName(exePath)!;
+        string filePath = exeDirectory + "/../../../config.toml";
         if (File.Exists(filePath))
         {
             var content = File.ReadAllText(filePath);
