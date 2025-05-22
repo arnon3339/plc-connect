@@ -4,7 +4,7 @@ network_no = "00"
 pc_no = "FF"
 io_no = "03FF"
 station_no = "00"
-monitoring_timer = "0010"
+monitoring_timer = "0004"
 number_of_points = "0001"
 
 [default.read]

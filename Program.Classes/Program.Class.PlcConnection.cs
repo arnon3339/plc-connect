@@ -36,10 +36,12 @@ namespace PlcConnect.Program.Classes
                 // Read the response
                 var response = new byte[256];
                 int bytesRead = await stream.ReadAsync(response);
+                var resAscii = Encoding.ASCII.GetString(response, 0, bytesRead);
 
                 // Return the response as a hex string
-                return BitConverter.ToString(response, 0, bytesRead).Replace("-", "");
+                // return BitConverter.ToString(response, 0, bytesRead).Replace("-", "");
                 // return "Command sent";
+                return resAscii;
             }
             catch (Exception ex)
             {
@@ -78,7 +80,7 @@ namespace PlcConnect.Program.Classes
 
                 var cmdToml = $"{headCmd}{networkCmd}{pcNoCmd}{ioNoCmd}{stationNoCmd}" +
                     $"{requestLengthCmd}{MonitoringTimerCmd}{commandCmd}{subcommandCmd}" +
-                    $"{deviceCodeCmd}{headDeviceCmd}{numOfPointsCmd}";
+                    $"{headDeviceCmd}{deviceCodeCmd.PadLeft(6, '0')}{numOfPointsCmd}";
                 
                 if (value != null)
                     cmdToml += headDeviceCmd == "M"? value != "0"? 1: 0: ushort.Parse(value).ToString("X4");
@@ -95,10 +97,12 @@ namespace PlcConnect.Program.Classes
                 // Read the response
                 var response = new byte[256];
                 int bytesRead = await stream.ReadAsync(response);
+                var resAscii = Encoding.ASCII.GetString(response, 0, bytesRead);
 
                 // Return the response as a hex string
-                return BitConverter.ToString(response, 0, bytesRead).Replace("-", "");
+                // return BitConverter.ToString(response, 0, bytesRead).Replace("-", "");
                 // return "Command sent";
+                return resAscii;
             }
             catch (Exception ex)
             {
